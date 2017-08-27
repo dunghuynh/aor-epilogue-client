@@ -1,9 +1,11 @@
 {
   "name": "aor-epilogue-client",
-  "version": "0.1.0",
-  "description": "A epilogue client for admin-on-rest",
+  "version": "0.2.0",
+  "description": "A Epilogue client for admin-on-rest",
   "main": "lib/index.js",
   "scripts": {
+    "compile": "babel --source-maps -d lib/ src/",
+    "prepublish": "npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
