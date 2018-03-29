@@ -22,6 +22,32 @@ import {
  * CREATE       => POST http://my.api.url/posts/123
  * DELETE       => DELETE http://my.api.url/posts/123
  */
+
+const sortValue = ({field, order}) => {
+  return order === 'DESC' ? `-${field}` : field;
+};
+
+function isEmpty(obj) {
+  return !obj || Object.keys(obj).length === 0;
+}
+
+function getQuery(params) {
+  const { filter, sort, pagination: { page, perPage }} = params
+  const query = {
+    ...params.filter
+  }
+  if (!isEmpty(sort)) {
+    query.sort = sortValue(sort)
+  }
+  if (!isEmpty(page)) {
+    query.page = page - 1
+  }
+  if (!isEmpty(perPage)) {
+    query.count = perPage 
+  }
+  return query
+}
+
 export default (apiUrl, httpClient = fetchJson) => {
   /**
      * @param {String} type One of the constants appearing at the top if this file, e.g. 'UPDATE'
@@ -32,18 +58,9 @@ export default (apiUrl, httpClient = fetchJson) => {
   const convertRESTRequestToHTTP = (type, resource, params) => {
     let url = '';
     const options = {};
-    const sortValue = ({field, order}) => {
-      return order === 'DESC' ? `-${field}` : field;
-    };
     switch (type) {
       case GET_LIST: {
-        const { page, perPage } = params.pagination;
-        const query = {
-          ...params.filter,
-          sort: sortValue(params.sort),
-          page: page - 1,
-          count: perPage,
-        };
+        const query = getQuery(params);
         url = `${apiUrl}/${resource}?${queryParameters(query)}`;
         break;
       }
@@ -52,13 +69,8 @@ export default (apiUrl, httpClient = fetchJson) => {
         break;
       case GET_MANY_REFERENCE: {
         const { page, perPage } = params.pagination;
-        const query = {
-          ...params.filter,
-          [params.target]: params.id,
-          sort: sortValue(params.sort),
-          page: page - 1,
-          count: perPage,
-        };
+        const query = getQuery(params);
+        query[params.target] = params.id
         url = `${apiUrl}/${resource}?${queryParameters(query)}`;
         break;
       }
